@@ -1,12 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,41 +8,70 @@ export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
 
   const handleSubmit = async () => {
-    if (isLogin) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert("登录失败: " + error.message);
-      else window.location.href = "/dashboard";
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) alert("注册失败: " + error.message);
-      else alert("注册成功，请点击登录");
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    // 拼接原生的请求地址
+    const endpoint = isLogin 
+      ? `${supabaseUrl}/auth/v1/token?grant_type=password`
+      : `${supabaseUrl}/auth/v1/signup`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "apikey": supabaseKey!,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        alert((isLogin ? "登录失败: " : "注册失败: ") + (data.msg || data.error_description || data.message));
+      } else {
+        if (isLogin) {
+          alert("登录成功！即将进入系统。");
+          // 保存 token 并跳转主页（使用原生跳转）
+          localStorage.setItem("supabase_token", data.access_token);
+          window.location.href = "/";
+        } else {
+          alert("注册成功！请点击下方切换到登录。");
+          setIsLogin(true);
+        }
+      }
+    } catch (err) {
+      alert("网络请求出错，请稍后重试");
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#1a1b26]">
-      <div className="w-[350px] rounded-lg bg-white p-8 shadow-xl">
-        <h1 className="mb-6 text-center text-2xl font-bold text-black">Game Life</h1>
+    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", backgroundColor: "#f3f4f6" }}>
+      <div style={{ width: "350px", backgroundColor: "#fff", padding: "30px", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
+        <h1 style={{ textAlign: "center", fontSize: "24px", fontWeight: "bold", marginBottom: "20px", color: "#111" }}>Game Life</h1>
         <input
           type="email"
           placeholder="请输入邮箱"
-          className="mb-4 w-full rounded border p-2 text-black"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
+          style={{ width: "100%", padding: "10px", marginBottom: "15px", border: "1px solid #ccc", borderRadius: "4px", color: "#111", boxSizing: "border-box" }}
         />
         <input
           type="password"
           placeholder="请输入密码"
-          className="mb-4 w-full rounded border p-2 text-black"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
+          style={{ width: "100%", padding: "10px", marginBottom: "15px", border: "1px solid #ccc", borderRadius: "4px", color: "#111", boxSizing: "border-box" }}
         />
         <button
           onClick={handleSubmit}
-          className="w-full rounded bg-blue-600 p-2 text-white hover:bg-blue-700"
+          style={{ width: "100%", padding: "10px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "16px" }}
         >
           {isLogin ? "登录" : "注册"}
         </button>
         <p
-          className="mt-4 cursor-pointer text-center text-sm text-blue-500"
+          style={{ textAlign: "center", fontSize: "14px", color: "#2563eb", marginTop: "15px", cursor: "pointer" }}
           onClick={() => setIsLogin(!isLogin)}
         >
           {isLogin ? "没有账号？去注册" : "已有账号？去登录"}
