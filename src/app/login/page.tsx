@@ -67,12 +67,6 @@ export default async function LoginPage({
               </button>
             </form>
           )}
-
-          {!hasGoogle && !isDev && (
-            <p className="text-center text-xs text-[var(--danger)]">
-              No auth provider configured. Set GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET.
-            </p>
-          )}
         </div>
       </div>
     </div>
