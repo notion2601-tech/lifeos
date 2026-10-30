@@ -11,7 +11,6 @@ export default function LoginPage() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     
-    // 拼接原生的请求地址
     const endpoint = isLogin 
       ? `${supabaseUrl}/auth/v1/token?grant_type=password`
       : `${supabaseUrl}/auth/v1/signup`;
@@ -33,7 +32,6 @@ export default function LoginPage() {
       } else {
         if (isLogin) {
           alert("登录成功！即将进入系统。");
-          // 保存 token 并跳转主页（使用原生跳转）
           localStorage.setItem("supabase_token", data.access_token);
           window.location.href = "/";
         } else {
@@ -47,7 +45,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center", backgroundColor: "#f3f4f6" }}>
+    // 这里加了绝对定位和极其夸张的 z-index，强制盖在背景图上面
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.6)" }}>
       <div style={{ width: "350px", backgroundColor: "#fff", padding: "30px", borderRadius: "8px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
         <h1 style={{ textAlign: "center", fontSize: "24px", fontWeight: "bold", marginBottom: "20px", color: "#111" }}>Game Life</h1>
         <input
